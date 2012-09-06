@@ -1,0 +1,262 @@
+1
+00:00:05,000 --> 00:00:10,000
+Welcome back to the OWASP Application Security Tutorial Series. 
+Selamat datang pada Seri Tutorial Keamanan Aplikasi OWASP.  
+
+My name is Jerry Hoff and this is episode number two: Injection Attacks. 
+Nama saya Jerry Hoff dan ini adalah episode nomor dua: Serangan Injeksi. 
+
+This tutorial series is web developers who want to write more secure code and learning about injection attacks is a great place to start.  
+Seri tutorial ini ditujukan untuk para pengembang aplikasi web yang ingin menulis kode yang lebih aman, dan mempelajari serangan injeksi dapat menjadi awal yang menarik. 
+
+So in the next 10 minutes we're gonna go through common type of injection attacks, known as SQL injections. 
+Dalam 10 menit ke depan, kita akan membahas serangan injeksi yang paling umum terjadi, yaitu SQL injection. 
+
+We'll then take a look at some other types of injection attacks. 
+Selanjutnya kita akan melihat macam-macam serangan injeksi lainnya. 
+
+I'll show you some common fixes. 
+Saya akan menunjukkan bagaimana mengatasinya. 
+
+And (torch?) to the end of video, I'll point you some useful articles and source code where you can learn more.
+Dan hingga akhir video, saya akan menunjukkan artikel-artikel yang relevan dan kode sumber sebagai bahan untuk belajar lebih lanjut. 
+
+So let's get started. 
+Mari segera kita mulai. 
+
+First of all, injection attacks are very serious problem. 
+Pertama-tama, serangan injeksi merupakan permasalahan yang sangat serius. 
+
+To give you some idea, every few years, the OWASP foundation puts a list top security risk for enterprise web application known as the OWASP Top 10. 
+Sebagai gambaran, setiap tahun, Yayasan OWASP menyusun daftar risiko keamanan aplikasi web enterprise yang dikenal sebagai OWASP Top 10. 
+
+The risk reflects the collective judgement of many-many security professionals in the industry. 
+Risiko ini merefleksikan penilaian kolektif dari banyak profesional keamanan dalam industri.  
+
+And right now, the top risk, to web applications, in their opinion, is injection. 
+Dan saat ini, risiko teratas untuk aplikasi web, menurut pendapat mereka, adalah injeksi. 
+
+So this is definitely something every web architect, developer, and tester needs to be very familiar with. 
+Hal ini merupakan sesuatu yang harus diketahui dengan baik oleh setiap arsitek web, pengembang, dan penguji. 
+
+And what makes it so dangerous is that easy to exploit, it's pretty common in web application, and the impact can be quite-quite severe. 
+Dan yang membuatnya sangat berbahaya adalah mudah untuk dieksploitasi, cukup umum terjadi pada aplikasi web, dan akibatnya bisa sangat-sangat parah. 
+
+So to make sure that we all have same idea what a SQL injection attack is, let's do a quick example of the kind injection attack, you'll most likely to see. 
+Jadi untuk memastikan kita semua memiliki definisi yang sama tentang apa itu serangan SQL injection, berikut ini adalah contoh sederhana serangan SQL injection, yang kiranya akan paling sering Anda lihat. 
+
+SQL injection. 
+SQL injection. 
+
+So let's imagine, an application that contains a simple form asking for user data. 
+Coba bayangkan, sebuah aplikasi yang terdapat sebuah form sederhana meminta pengguna memasukkan data. 
+
+And to keep things simple, we're gonna just focus on just one field, the name field.
+Dan untuk membuat segala sesuatunya sederhana, kita hanya akan fokus pada satu field, yaitu field nama.  
+
+Now as developers, where normally told, how the application should work and then we created. 
+Sekarang sebagai pengembang, pengembang umumnya diberitahu bagaimana aplikasi harus bekerja, lalu pengembang membuatnya. 
+
+So we imagine the user will filled up the form, and then hit submit. 
+Jadi kita membayangkan pengguna akan mengisi form lalu menekan tombol submit. 
+
+Where the data will leave the user's machine, will be sent cross the Internet where wind up entering our web application. 
+Data akan meninggalkan komputer pengguna, dikirim melewati Internet lalu masuk ke dalam aplikasi web kita. 
+
+Now most web developers make heavy use of databases to store and retrieve data. 
+Saat ini, pengembang web memanfaatkan basisdata untuk menyimpan dan mengakses data. 
+
+And to talk to database we use a language called SQL. 
+Dan untuk berbicara dengan basisdata, kita menggunakan bahasa SQL. 
+
+So very often the data that was entered by our users, winds up as part of this SQL statement. 
+Sangat sering, data yang dimasukkan oleh pengguna, berakhir sebagai bagian dari pernyataan SQL. 
+
+You can see the developers here joining a fragment of SQL statement together with the user supplied data to make a complete command.  
+Anda dapat melihat di sini pengembang menggabungkan fragmen pernyataan SQL bersamaan dengan data yang dimaukkan pengguna untuk menghasilkan perintah yang lengkap. 
+
+This command is send to database, where the database interpret and run the command. 
+Perintah ini dikirim ke basis data, yang nantinya perintah ini akan diintrepretasikan dan dijalankan oleh basis data. 
+
+This is where the problem starts. 
+Di sinilah permasalahan dimulai. 
+
+The application does work, but the way how the code is written, is definitely not secure. 
+Aplikasi memang bekerja, namun bagaimana kode ditulis, jelas tidak aman. 
+
+Let's look at the same application, but this time let's see what happen when we add little extra something to the user data. 
+Mari lihat aplikasi tersebut, namun kali ini kita lihat apa yang akan terjadi saat kita tambahkan sesuatu ekstra pada data yang dimasukkan pengguna. 
+
+Like last time, I'll enter my name but this time I'll put a little SQL at the end. 
+Seperti sebelumnya, kali ini saya akan memasukkan naman saya namun saya akan tambahkan sedikit SQL di bagian akhir. 
+
+I'll hit submit and send request across the Internet to the target web application. 
+Saya akan tekan submit dan mengirimkan request melewati Internet menuju aplikasi web yang dituju. 
+
+Like before, the user-supplied data is joined together with the SQL but this time a bit of SQL I added to the end of my name, actually alters the inteded purpose of SQL statement. 
+Seperti sebelumnya, data yang dimasukkan pengguna digabungkan bersama dengan SQL namun kali ini ditambahkan perintah SQL, yang akan mengubah tujuan yang diinginkan dari pernyataan SQL. 
+
+The post line up perfectly to make a valid SQL statement. 
+Baris post menjadi pernyataan SQL yang valid. 
+
+But now this time instead of just selecting the record for one name, it pulls down all the records. 
+Namun kali ini bukan hanya memilih rekaman satu nama, akan ditampilkan seluruh rekaman. 
+
+Which is exactly, how attackers pull out the attack like this. 
+Hal ini merupakan bagaimana penyerang melakukan serangan seperti ini. 
+
+For example, in a recent case, attacker stole close to almost 200 thousand unencrypted user password and 500 thousand user's email from a very popular tech website. 
+Sebagai contoh, belum lama ini, seorang penyerang mencuri hampir 200 ribu user-password yang tidak terenkripsi dan 500 ribu email dari sebuah situs teknologi populer. 
+
+And another attack, due SQL injection, 30 million customer records were stolen from a popular online dating website. 
+Dan serangan lainnya, akibatnya SQL injection, 30 juta catatan pelanggan dicuri dari sebuah situs kencan daring.
+
+As you can see, SQL injection, is a huge risk where single code flaw leads to massive data loss. 
+Seperti yang Anda lihat, SQL injection, berisiko besar yang karena sebuah code flaw dapat berakibat pada kehilangan data masif. 
+
+It can either results the attackers taking over your entire database server. 
+Akibat lainnya yang mungkin terjadi adalah hingga penyerang dapat mengambil alih server basis data anda. 
+
+For more information you can check out the OWASP Presentation called "Advanced SQL Injection, to Operating System Full Control" by Bernardo Damele. 
+Untuk informasi lebih lanjut, anda dapat melihat presentasi OWASP yang berjudul "SQL Injection Mahir, hingga Kendali Penuh Sistem Operasi" oleh Bernardo Damele.  
+
+To make matters even worse, it's not just databases, any interpreters, used by your web application, can potentially have this problem. 
+Untuk membuat hal lebih buruk, tidak hanya basis data, interpreter apapun, yang digunakan oleh aplikasi web anda, secara potensial dapat memiliki masalah ini. 
+
+So what are the intepreters commonly used by web application? 
+Jadi, interpreter apakah yang umum digunakan oleh aplikasi web? 
+
+Well obviously, databases. 
+Hmm... jelasnya, basis data. 
+
+And for authentication, very frequently you'll have LDAP server, plus an array of XML-based technology, like XSLT, XPATH, and other XML messaging format. 
+Dan untuk otentikasi, sangat umum anda akan memiliki server LDAP, ditambah dengan beragam teknologi berbasiskan XML seperti XSLT, XPATH dan format pesan XML.  
+
+In addition, most web applications keep log files, which are not interpreted, but attackers can actually inject into them, new lines, so that they can add fake log entries. 
+Sebagai tambahan, umumnya aplikasi web menyimpan berkas log, yang tidak diintrepretasikan, namun penyerang sebenarnya dapat meng-injeksi padanya, baris baru, sehingga mereka dapat menambah entry log palsu. 
+
+In some cases, we have web application that call shell scripts on the server, where if you're not careful, you can wind up, submitting user-supplied data directly to the command line. 
+Pada beberapa kasus, kami memiliki aplikasi web yang memanggil shell script pada server, saat anda tidak berhati-hati, anda dapat berakhir pada memasukkan data pengguna langsung pada command line. 
+
+Essentially giving attackers shell access to your web server. 
+Yang pada dasarnya memberikan penyerang akses shell server web anda. 
+
+Definitely not a good thing.  
+Jelas hal ini bukanlah hal yang baik. 
+
+And of course, nearly every web browser has a javascript interpreter. 
+Dan tentu, hampir setiap peramban web memiliki interpreter javascript. 
+
+This type of injection is so common, we have a special name for it. 
+Jenis injeksi ini sangat umum, kami memiliki istilah khusus untuknya. 
+
+Cross Site Scripting aka XSS which is the topic of the next episode. 
+Cross Site Scripting alias XSS yang akan menjadi topik episode selanjutnya. 
+
+So now that we know these are serious problem, how we defend ourself. 
+Jadi sekarang kita sudah tahu hal ini merupakan masalah yang serius, bagaimana caranya kita mempertahankan diri. 
+
+Let's deal with SQL injection first. 
+Mari membahas SQL injection lebih dulu. 
+
+First of all please be aware that you cannot rely on javascript validation or by sending data via POST method. 
+Pertama, mohon diperhatikan bahwa anda tidak dapat mengandalkan pada validasi javascript atau dengan mengirimkan data menggunakan metode POST. 
+
+Both of these techniques can be trivially circumvented using web proxy which I'll be demonstrated on the upcoming episode. 
+Kedua teknik ini secara trivia dapat diakali dengan menggunakan web proxy yang akan saya tunjukkan pada episode selanjutnya. 
+
+If you're constructing SQL statement in your web application, make sure that you're using parameterized queries. 
+Jika anda mengkonstruksi pernyataan SQL pada web aplikasi, pastikan anda menggunakan parameterized queries. 
+
+Parameterized queries aren't vulnerable to SQL injection attacks. 
+Parameterized queries tidak rentan terhadap serangan SQL injection. 
+
+So, if you dynamically creating SQL statements within your web application, normally this is your best bet. 
+Jadi, jika anda secara dinamis membuat pernyataan SQL dalam aplikasi web, umumnya hal ini merupakan penanganan terbaik. 
+
+So let's take a quick look at some code. 
+Mari lihat secara cepat potongan kode berikut. 
+
+The first example is in Java. 
+Contoh pertama adalah dalam Java. 
+
+So in this java code, we put a question mark placeholder in the SQL statement where we want the user data to go. 
+Jadi dalam kode java ini, kami menempatkan placeholder tanda tanya dalam pernyataan SQL, sebagai tempat data pengguna. 
+
+Now instead of the statement where using prepared statement which allows us to safely replace question mark with the user data. 
+Sekarang ... pernyataan menggunakan prepared statement yang memungkinkan kita menggantikan tanda tanya secara aman dengan data pengguna. 
+
+Now let's move on to dot net. dot net is almost the same thing. 
+Sekarang mari lanjutkan ke dot net. Hal yang hampir sama berlaku pada dot net. 
+
+We put a token in the SQL statement where we want to safely insert user data, we then instantiate the parameter instance, and tell it the token name and value. 
+Kita letakkan token pada pernyataan SQL agar data pengguna memungkinkan dimasukkan secara aman, kita instantiate parameter instance, dan katakan nama token berikut nilainya. 
+
+Then add we add the parameter to the command. 
+Lalu kita tambahkan parameter pada perintah. 
+
+Now another solution is to not construct dynamic SQL statmement in the code, and instead use stored procedure. 
+Solusi lainnya adalah dengan tidak mengkonstruksi pernyataan SQL dinamik dalam kode, alih-alih gunakan stored procedure. 
+
+There are few security best practices you'll need to follow when constructing and calling stored procedure which won't be covered here but I'll point you to some resources on the web for learning more about that. 
+Ada beberapa praktik umum keamanan yang anda perlu ikuti saat mengkonstruksi dan memanggil stored procedure yang tidak akan dibahas dalam episode ini namun saya akan menunjukkan referensi pada web untuk mempelajari hal tersebut. 
+
+So those are your best bet for SQL injection. 
+Jadi, hal tersebut adalah penanganan terbaik untuk SQL injection.
+
+But what about other interpreter that we discussed: like XML, command line, LDAP and somebody others in those cases, those interpreters, do not support parameterized expression, so you're gonna have to encode the user data before you concatenate together to make a command. 
+Namun bagaimana dengan interpreter lainnya yang telah kita diskusikan: seperti XML, command line, LDAP; interpreter ini tidak mendukung ekspresi parameterized, jadi anda perlu meng-encode data pengguna sebelum melakukan concatenate bersama untuk menjadikannya sebuah perintah. 
+
+Now each interpreter is going to require a specific encoder but I'm gonna show you on the web where you can download whole set of encoders that can help you defend yourself against these type of injection attack. 
+Sekarang setiap interpreter akan membutuhkan encoder spesifik namun saya akan menunjukkan referensi pada web di mana anda dapat mengunduh sekumpulan encoder yang dapat membantu anda mempertahankan diri dari jenis serangan injeksi. 
+
+Actually there are more about injection attack that you wanna know about. 
+Sebenarnya terdapat banyak hal mengenai serangan injeksi yang Anda ingin ketahui. 
+
+This video however is just giving you a brief introduction, just the tip of the iceberg. 
+Video ini namun hanya memberikan anda pengantar singkat, hanya puncak dari gunung es. 
+
+But hopefully now you have an idea about what injection are and few of defenses that you can use to defend your self. 
+Namun diharapkan anda memiliki ide dasar mengenai apa itu injection dan beberapa cara teknik pengamanan yang dapat digunakan untuk mempertahankan diri. 
+
+But you need to find out more to really build secure code. 
+Namun Anda perlu mencari tahu lebih jauh bagaimana menulis kode yang aman. 
+
+So let's turn to the OWASP website. 
+Sekarang mari kembali ke situs OWASP. 
+
+Which is full articles that you ought read a to read complete understanding of injection attacks. 
+Yang menyajikan beragam artikel yang bisa anda baca untuk mendapatkan pemahaman yang lengkap mengeai serangan injection. 
+
+Definitely reading The SQL Injection Prevention Cheat Sheet which gives you more information about prepared statement, stored procedures, and escaping data. 
+Tentunya membaca SQL Injection Prevention Cheat Sheet akan memberi anda informasi lebih detail mengenai prepared statement, stored procedures, dan escaping data. 
+
+Then check out the articles on XPATH Injection, Log Injection, and Command Injection. 
+Lalu coba lihat artikel XPATH Injection, Log Injection dan Command Injection. 
+
+And the last thing I want to show you is where you could get those encoders that I spoke about before. 
+Dan hal terakhir yang ingin saya tunjukkan adalah lokasi di mana Anda bisa mendapatkan encoder yang saya bicarakan sebelumnya. 
+
+For good references examples on encoders, find the OWASP Enterprise Security API also known as ESAPI. 
+Untuk contoh referensi yang bagus soal encoder, telusuri OWASP Enterprise Security API atau disebut juga ESAPI. 
+
+ESAPI is free and open source, and I encourage you to take a look at the source code and check out the encoders which you can use properly encode untrusted data and defend yourself against attacks we've discussed.  
+ESAPI bersifat bebas dan kode sumber terbuka, dan saya menyarankan Anda untuk melihat kode sumber dan melihat encoder yang dapat Anda gunakan untuk meng-encode data-tak-terpercaya dan mempertahankan diri dari serangan yang telah kita bahas. 
+
+So that's it for this episode of this OWASP AppSec Tutorial Series. 
+Jadi, usai sudah untuk episode ini dari Seri Tutorial Keamanan Aplikasi OWASP. 
+
+I hope I had give you a bit more insights on injection attacks. 
+Saya harap, saya telah memberi Anda pencerahan mengenai serangan injeksi. 
+
+Links to all the articles and resources, mentioned in this episode can be found on freecbt.com 
+Tautan ke semua artikel dan referensi yang disebutkan di artikel ini dapat diakses melalui freecbt.com
+
+Special thank you to all those who gave feedback for the show. 
+Terima kasih untuk mereka yang telah memberikan komentar. 
+
+Be sure to follow our youtube channel and get notified when new episode become available. 
+Jangan lupa ikuti kanal youtube kami untuk segera mengetahui saat episode anyar tersedia. 
+
+This Jerry Hoff signing out and I'll look forward to ... next time 
+Di sini Jerry Hoff pamit, dan saya ... untuk kesempatan lainnya. 

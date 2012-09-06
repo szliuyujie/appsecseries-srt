@@ -1,0 +1,351 @@
+1
+00:00:19,000 --> 00:00:21,000
+Welcome back to the OWASP Application Security Tutorial Series. 
+
+2
+00:00:22,000 --> 00:00:26,000
+My name is Jerry Hoff and this is episode number two: Injection Attacks. 
+
+3
+00:00:26,000 --> 00:00:35,000
+This tutorial series is web developers who want to write more secure code and learning about injection attacks is a great place to start.  
+
+4
+00:00:35,000 --> 00:00:43,000
+So in the next 10 minutes we're gonna go through common type of injection attacks, known as SQL injections. 
+
+5
+00:00:44,000 --> 00:00:47,000
+We'll then take a look at some other types of injection attacks. 
+
+6
+00:00:47,000 --> 00:00:49,000
+I'll show you some common fixes. 
+
+7
+00:00:49,000 --> 00:00:56,000
+And (torch?) to the end of video, I'll point you some useful articles and source code where you can learn more.
+
+8
+00:00:56,000 --> 00:00:58,000
+So let's get started. 
+
+9
+00:00:59,000 --> 00:01:02,000
+First of all, injection attacks are very serious problem. 
+
+10
+00:01:03,000 -->  00:01:13,000
+To give you some idea, every few years, the OWASP foundation puts a list top security risk for enterprise web application known as the OWASP Top 10. 
+
+11
+00:01:13,000 --> 00:01:19,000
+The risk reflects the collective judgement of many-many security professionals in the industry. 
+
+12
+00:01:20,000 --> 00:01:25,000
+And right now, the top risk, to web applications, in their opinion, is injection. 
+
+13
+00:01:26,000 --> 00:01:33,000
+So this is definitely something every web architect, developer, and tester needs to be very familiar with. 
+
+14
+00:01:34,000 --> 00:01:42,000
+And what makes it so dangerous is that easy to exploit, it's pretty common in web application, and the impact can be quite-quite severe. 
+
+15
+00:01:42,000 --> 00:01:53,000
+So to make sure that we all have same idea what a SQL injection attack is, let's do a quick example of the kind injection attack, you'll most likely to see. 
+
+16
+00:01:53,000 --> 00:01:54,000
+SQL injection. 
+
+17
+00:01:54,000 --> 00:02:00,000
+So let's imagine, an application that contains a simple form asking for user data. 
+
+18
+00:02:00,000 --> 00:02:05,000
+And to keep things simple, we're gonna just focus on just one field, the name field.
+
+19
+00:02:05,000 --> 00:02:11,000
+Now as developers, where normally told, how the application should work and then we created. 
+
+20
+00:02:11,000 --> 00:02:15,000
+So we imagine the user will filled up the form, and then hit submit. 
+
+21
+00:02:15,000 --> 00:02:23,000
+Where the data will leave the user's machine, will be sent cross the Internet where wind up entering our web application. 
+
+22
+00:02:23,000 --> 00:02:29,000
+Now most web developers make heavy use of databases to store and retrieve data. 
+
+23
+00:02:29,000 --> 00:02.33,000
+And to talk to database we use a language called SQL. 
+
+24
+00:02.33,000 --> 00:02:41,000
+So very often the data that was entered by our users, winds up as part of this SQL statement. 
+
+25
+00:02:41,000 --> 00:02.50,000
+You can see the developers here joining a fragment of SQL statement together with the user supplied data to make a complete command.  
+
+26
+00:02.50,000 --> 00:02:56,000
+This command is send to database, where the database interprets and runs the command. 
+
+27
+00:02:56,000 --> 00:02:58,000
+This is where the problem starts. 
+
+28
+00:02:58,000 --> 00:03:04,000
+The application does work, but the way how the code is written, is definitely not secure. 
+
+29
+00:03:04,000 --> 00:03.08,000
+Let's look at the same application,  
+
+30
+00.03.08,000 --> 00.03.13,000 
+but this time let's see what happen when we add little extra something to the user data.
+
+31
+00:03:13,000 --> 00:03:18,000
+Like last time, I'll enter my name but this time I'll put a little SQL at the end. 
+
+32
+00:03:18,000 --> 00:03:23,000
+I'll hit submit and send request across the Internet to the target web application. 
+
+33
+00:03:23,000 --> 00:03:36,000
+Like before, the user-supplied data is joined together with the SQL but this time a bit of SQL I added to the end of my name, actually alters the intended purpose of SQL statement. 
+
+34
+00:03:36,000 --> 00:03:39,000
+The post line up perfectly to make a valid SQL statement. 
+
+35
+00:03:39,000 --> 00:03:45,000
+But now this time instead of just selecting the record for one name, it pulls down all the records. 
+
+36
+00:03:45,000 --> 00:03:49,000
+Which is exactly, how attackers pull out the attack like this. 
+
+37
+00:03:49,000 --> 00:04:03,000
+For example, in a recent case, attacker stole close to almost 200 thousand unencrypted user password and 500 thousand user's email from a very popular tech website. 
+
+38
+00:04:03,000 --> 00:04:11,000
+And another attack, due SQL injection, 30 million customer records were stolen from a popular online dating website. 
+
+39
+00:04:11,000 --> 00:04:19,000
+As you can see, SQL injection, is a huge risk where single code flaw leads to massive data loss. 
+
+40
+00:04:19,000 --> 00:04:24,000
+It can either results the attackers taking over your entire database server. 
+
+41
+00:04:24,000 --> 00:04:35,000
+For more information you can check out the OWASP Presentation called "Advanced SQL Injection, to Operating System Full Control" by Bernardo Damele. 
+
+42
+00:04:35,000 --> 00:04:45,000
+To make matters even worse, it's not just databases, any interpreters, used by your web application, can potentially have this problem. 
+
+43
+00:04:45,000 --> 00:04:49,000
+So what are the intepreters commonly used by web application? 
+
+44
+00:04:50,000 --> 00:04:52,000
+Well obviously, databases. 
+
+44
+00:04:52,000 --> 00:05:03,000
+And for authentication, very frequently you'll have LDAP server, plus an array of XML-based technology, like XSLT, XPATH, and other XML messaging format. 
+
+44
+00:05:03,00 --> 00:05:16,000
+In addition, most web applications keep log files, which are not interpreted, but attackers can actually inject into them, new lines, so that they can add fake log entries. 
+
+44
+00:05:16,000 --> 00:05:28,000
+In some cases, we have web application that call shell scripts on the server, where if you're not careful, you can wind up, submitting user-supplied data directly to the command line. 
+
+44
+00:05:29,000 --> 00:05:32,000
+Essentially giving attackers shell access to your web server. 
+
+45
+00:05:32,000 --> 00:05:34,000
+Definitely not a good thing.  
+
+46
+00:05:34,000 --> 00:05:39,000
+And of course, nearly every web browser has a javascript interpreter. 
+
+47
+00:05:39,000 --> 00:05:44,000
+This type of injection is so common, we have a special name for it. 
+
+48
+00:05:44,000 --> 00:05:51,000
+Cross Site Scripting aka XSS which is the topic of the next episode. 
+
+49
+00:05:51,000 --> 00:05:56,000
+So now that we know these are serious problem, how we defend ourself. 
+
+50
+00:05:57,000 --> 00:06:00,000
+Let's deal with SQL injection first. 
+
+51
+00:06:00,000 --> 00:06:07,000
+First of all please be aware that you cannot rely on javascript validation or by sending data via POST method. 
+
+52
+00:06:07,000 --> 00:06:14,000
+Both of these techniques can be trivially circumvented using web proxy which I'll demonstrate on the upcoming episode. 
+
+53
+00:06:14,000 --> 00:06:21,000
+If you're constructing SQL statement in your web application, make sure that you're using parameterized queries. 
+
+54
+00:06:21,000 --> 00:06:26,000
+Parameterized queries aren't vulnerable to SQL injection attacks. 
+
+55
+00:06:26,000 --> 00:06:38,000
+So, if you dynamically creating SQL statements within your web application, normally this is your best bet. 
+
+56
+00:06:38,000 --> 00:06:40,000
+So let's take a quick look at some code. 
+
+58
+00:06:40,000 --> 00:06:41,000
+The first example is in Java. 
+
+59
+00:06:41,000 --> 00.06.50,000
+So in this java code, we put a question mark placeholder in the SQL statement where we want the user data to go. 
+
+60
+00:06:50.000 --> 00:07.00,000
+Now instead of the statement where using prepared statement which allows us to safely replace question mark with the user data. 
+
+61
+00:07.00,000 --> 00:07:05,000
+Now let's move on to dot net. dot net is almost the same thing. 
+
+62
+00:07:05,000 --> 00:07:17,000
+We put a token in the SQL statement where we want to safely insert user data, we then instantiate the parameter instance, and tell it the token name and value. 
+
+63
+00:07:17,000 --> 00:07:20,000
+Then add we add the parameter to the command. 
+
+64
+00:07:22,000 --> 00:07:31,000
+Now another solution is to not construct dynamic SQL statmement in the code, and instead use stored procedure. 
+
+65
+00:07:31,000 --> 00:07:45,000
+There are few security best practices you'll need to follow when constructing and calling stored procedure which won't be covered here but I'll point you to some resources on the web for learning more about that. 
+
+66
+00:07:45,000 --> 00:07:48,000
+So those are your best bet for SQL injection. 
+
+67
+00:07:49,000 --> 00:08:08,000
+But what about other interpreter that we discussed: like XML, command line, LDAP and somebody others in those cases, those interpreters, do not support parameterized expression, so you're gonna have to encode the user data before you concatenate together to make a command. 
+
+68
+00:08:08,000 --> 00:08:21,000
+Now each interpreter is going to require a specific encoder but I'm gonna show you on the web where you can download whole set of encoders that can help you defend yourself against these type of injection attack. 
+
+69
+00:08:22,000 --> 00:08:28,000
+Actually there are more about injection attack that you wanna know about. 
+
+70
+00:08:28,000 --> 00:08:34,000
+This video however is just giving you a brief introduction, just the tip of the iceberg. 
+
+71
+00:08:34,000 --> 00:08:39,000
+But hopefully now you have an idea about what injection are and few of defenses that you can use to defend your self. 
+
+72
+00:08:40,000 --> 00:08:43,000
+But you need to find out more to really build secure code. 
+
+73
+00:08:43,000 --> 00:08:47,000
+So let's turn to the OWASP website. 
+
+74
+00:08:47,00 --> 00:08:53,000
+Which is full articles that you ought read a to read complete understanding of injection attacks. 
+
+75
+00:08:54,000 --> 00:09:06,000
+Definitely reading The SQL Injection Prevention Cheat Sheet which gives you more information about prepared statement, stored procedures, and escaping data. 
+
+76
+00:09:06,000 --> 00:09:16,000
+Then check out the articles on XPATH Injection, Log Injection, and Command Injection. 
+
+77
+00:09:16,000 --> 00:09:22,000
+And the last thing I want to show you is where you could get those encoders that I spoke about before. 
+
+78
+00:09:22,000 --> 00:09:30,000
+For good references examples on encoders, find the OWASP Enterprise Security API also known as ESAPI. 
+
+79
+00:09:30,000 --> 00:09:42,000
+ESAPI is free and open source, and I encourage you to take a look at the source code and check out the encoders which you can use properly encode untrusted data and defend yourself against attacks we've discussed.  
+
+80
+00:09:42,000 --> 00:09:48,000
+So that's it for this episode of this OWASP AppSec Tutorial Series. 
+
+81
+00:09:48,000 --> 00:09:51,000
+I hope I had give you a bit more insights on injection attacks. 
+
+82
+00:09:51,000 --> 00:09:59,000
+Links to all the articles and resources, mentioned in this episode can be found on freecbt.com 
+
+83
+00:09:59,000 --> 00:10:03,000
+Special thank you to all those who gave feedback for the show. 
+
+84
+00:10:03,000 --> 00:10:09,000
+Be sure to follow our youtube channel and get notified when new episode become available. 
+
+85
+00:10:09,000 --> 00:10:14,000
+This Jerry Hoff signing out and I'll look forward to talk to you next time
