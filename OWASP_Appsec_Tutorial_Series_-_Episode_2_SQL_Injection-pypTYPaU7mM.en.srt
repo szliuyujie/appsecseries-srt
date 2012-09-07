@@ -1,153 +1,313 @@
 1
-00:00:19,000 --> 00:00:21,000
+00:00:18,524 --> 00:00:20,864
 Welcome back to the OWASP Application Security Tutorial Series. 
 
 2
-00:00:22,000 --> 00:00:26,000
-My name is Jerry Hoff and this is episode number two: Injection Attacks. 
+00:00:20,864 --> 00:00:22,067
+My name is Jerry Hoff 
 
 3
-00:00:26,000 --> 00:00:35,000
-This tutorial series is web developers who want to write more secure code and learning about injection attacks is a great place to start.  
+00:00:22,067 --> 00:00:26,246
+and this is episode number two: Injection Attacks. 
 
 4
-00:00:35,000 --> 00:00:43,000
-So in the next 10 minutes we're gonna go through common type of injection attacks, known as SQL injections. 
+00:00:28,352 --> 00:00:30,357
+This tutorial series is for web developers 
 
 5
-00:00:44,000 --> 00:00:47,000
-We'll then take a look at some other types of injection attacks. 
+00:00:30,357 --> 00:00:32,435
+who want to write more secure code 
 
 6
+00:00:32,435 --> 00:00:36,312
+and learning about injection attacks is a great place to start.  
+
+7
+00:00:36,312 --> 00:00:36,312
+So in the next 10 minutes
+
+8
+00:00:36,312 --> 00:00:42,000
+we're gonna go through common type of injection attacks, 
+
+9
+00:00:42,000 --> 00:00:43,499
+known as SQL injections. 
+
+10
+00:00:44,000 --> 00:00:46,541
+We'll then take a look at some other types of injection attacks. 
+
+11
 00:00:47,000 --> 00:00:49,000
 I'll show you some common fixes. 
 
-7
-00:00:49,000 --> 00:00:56,000
-And (torch?) to the end of video, I'll point you some useful articles and source code where you can learn more.
-
-8
-00:00:56,000 --> 00:00:58,000
-So let's get started. 
-
-9
-00:00:59,000 --> 00:01:02,000
-First of all, injection attacks are very serious problem. 
-
-10
-00:01:03,000 -->  00:01:13,000
-To give you some idea, every few years, the OWASP foundation puts a list top security risk for enterprise web application known as the OWASP Top 10. 
-
-11
-00:01:13,000 --> 00:01:19,000
-The risk reflects the collective judgement of many-many security professionals in the industry. 
-
 12
-00:01:20,000 --> 00:01:25,000
-And right now, the top risk, to web applications, in their opinion, is injection. 
+00:00:49,000 --> 00:00:51,527
+And till to the end of video, 
 
 13
-00:01:26,000 --> 00:01:33,000
-So this is definitely something every web architect, developer, and tester needs to be very familiar with. 
+00:00:51,527 --> 00:00:53,867
+I'll point you some useful articles 
 
 14
-00:01:34,000 --> 00:01:42,000
-And what makes it so dangerous is that easy to exploit, it's pretty common in web application, and the impact can be quite-quite severe. 
+00:00:53,867 --> 00:00:56,207
+and source code where you can learn more.
 
 15
-00:01:42,000 --> 00:01:53,000
-So to make sure that we all have same idea what a SQL injection attack is, let's do a quick example of the kind injection attack, you'll most likely to see. 
+00:00:57,000 --> 00:00:58,279
+So let's get started. 
 
 16
-00:01:53,000 --> 00:01:54,000
-SQL injection. 
+00:00:59,000 --> 00:01:02,196
+First of all, injection attacks are very serious problem. 
 
 17
-00:01:54,000 --> 00:02:00,000
-So let's imagine, an application that contains a simple form asking for user data. 
+00:01:02,196 -->  00:01:05,171
+To give you some idea, every few years
 
 18
-00:02:00,000 --> 00:02:05,000
-And to keep things simple, we're gonna just focus on just one field, the name field.
+00:01:05,171 --> 00:01:09,148
+the OWASP foundation puts a list top security risk 
 
 19
-00:02:05,000 --> 00:02:11,000
-Now as developers, where normally told, how the application should work and then we created. 
+00:01:09,148 --> 00:01:13,293
+for enterprise web application known as the OWASP Top 10. 
 
 20
-00:02:11,000 --> 00:02:15,000
-So we imagine the user will filled up the form, and then hit submit. 
+00:01:13,293 --> 00:01:15,967
+The risk reflects the collective judgement 
 
 21
-00:02:15,000 --> 00:02:23,000
-Where the data will leave the user's machine, will be sent cross the Internet where wind up entering our web application. 
+00:01:15,967 --> 00:01:19,550
+of many-many security professionals in the industry. 
 
 22
-00:02:23,000 --> 00:02:29,000
-Now most web developers make heavy use of databases to store and retrieve data. 
+00:01:20,000 --> 00:01:22,926
+And right now, the top risk, to web applications, 
 
 23
-00:02:29,000 --> 00:02.33,000
-And to talk to database we use a language called SQL. 
+00:01:22,926 --> 00:01:25,934
+in their opinion, is injection. 
 
 24
-00:02.33,000 --> 00:02:41,000
-So very often the data that was entered by our users, winds up as part of this SQL statement. 
+00:01:26,000 --> 00:01:29,778
+So this is definitely something every web architect, 
 
 25
-00:02:41,000 --> 00:02.50,000
-You can see the developers here joining a fragment of SQL statement together with the user supplied data to make a complete command.  
+00:01:29,778 --> 00:01:33,227
+developer, and tester needs to be very familiar with. 
 
 26
-00:02.50,000 --> 00:02:56,000
-This command is send to database, where the database interprets and runs the command. 
+00:01:34,000 --> 00:01:36,770
+And what makes it so dangerous is that easy to exploit, 
 
 27
-00:02:56,000 --> 00:02:58,000
-This is where the problem starts. 
+00:01:36,770 --> 00:01:39,511
+it's pretty common in web application, 
 
 28
-00:02:58,000 --> 00:03:04,000
-The application does work, but the way how the code is written, is definitely not secure. 
+00:01:39,511 --> 00:01:42,720
+and the impact can be quite-quite severe. 
 
 29
-00:03:04,000 --> 00:03.08,000
-Let's look at the same application,  
+00:01:42,720 --> 00:01:47,734
+So to make sure that we all have same idea what a SQL injection attack is, 
 
 30
-00.03.08,000 --> 00.03.13,000 
-but this time let's see what happen when we add little extra something to the user data.
+00:01:47,734 --> 00:01:51,760
+let's do a quick example of the kind injection attack, 
 
 31
-00:03:13,000 --> 00:03:18,000
-Like last time, I'll enter my name but this time I'll put a little SQL at the end. 
+00:01:51,784 --> 00:01:53,489
+you'll most likely to see. 
 
 32
-00:03:18,000 --> 00:03:23,000
-I'll hit submit and send request across the Internet to the target web application. 
+00:01:53,489 --> 00:01:54,960
+SQL injection. 
 
 33
-00:03:23,000 --> 00:03:36,000
-Like before, the user-supplied data is joined together with the SQL but this time a bit of SQL I added to the end of my name, actually alters the intended purpose of SQL statement. 
+00:01:54,960 --> 00:01:56,197
+So let's imagine, 
 
 34
-00:03:36,000 --> 00:03:39,000
-The post line up perfectly to make a valid SQL statement. 
+00:01:56,197 --> 00:01:59,004
+an application that contains a simple form 
 
 35
-00:03:39,000 --> 00:03:45,000
-But now this time instead of just selecting the record for one name, it pulls down all the records. 
+00:01:59,004 --> 00:02:00,843
+asking for user data. 
 
 36
-00:03:45,000 --> 00:03:49,000
-Which is exactly, how attackers pull out the attack like this. 
+00:02:00,843 --> 00:02:02,213
+And to keep things simple, 
 
 37
-00:03:49,000 --> 00:04:03,000
-For example, in a recent case, attacker stole close to almost 200 thousand unencrypted user password and 500 thousand user's email from a very popular tech website. 
+00:02:02,213 --> 00:02:04,458
+we're gonna just focus on just one field, 
 
 38
-00:04:03,000 --> 00:04:11,000
+00:02:04,458 --> 00:02:05,494
+the name field.
+
+39
+00:02:05,000 --> 00:02:07,767
+Now as developers, where normally told, 
+
+40
+00:02:07,767 --> 00:02:09,539
+how the application should work 
+
+41
+00:02:09,539 --> 00:02:11,511
+and then we created. 
+
+42
+00:02:11,511 --> 00:02:13,951
+So we imagine the user will filled up the form, 
+
+43
+00:02:13,951 --> 00:02:15,000
+and then hit submit. 
+
+44
+00:02:15,000 --> 00:02:17,628
+Where the data will leave the user's machine, 
+
+45
+00:02:17,628 --> 00:02:20,275
+will be sent cross the Internet 
+
+46
+00:02:20,275 --> 00:02:23,217
+where wind up entering our web application. 
+
+47
+00:02:23,217 --> 00:02:27,428
+Now most web developers make heavy use of databases
+
+48
+00:02:27,428 --> 00:02:29,534
+to store and retrieve data. 
+
+49
+00:02:29,534 --> 00:02.33,512
+And to talk to database we use a language called SQL. 
+
+50
+00:02.33,512 --> 00:02:38,732
+So very often the data that was entered by our users, 
+
+51
+00:02:38,732 --> 00:02:41,874
+winds up as part of this SQL statement. 
+
+52
+00:02:41,874 --> 00:02:46,653
+You can see the developers here joining a fragment of SQL statement 
+
+53
+00:02:46,653 --> 00:02:49,127
+together with the user supplied data 
+
+54
+00:02:49,127 --> 00:02:50,671
+to make a complete command.  
+
+55
+00:02.50,671 --> 00:02:53,078
+This command is send to database, 
+
+56
+00:02:53,078 --> 00:02:55,885
+where the database interprets and runs the command. 
+
+57
+00:02:56,000 --> 00:02:58,593
+This is where the problem starts. 
+
+58
+00:02:58,593 --> 00:03:00,699
+The application does work, 
+
+59
+00:03:00,699 --> 00:03:04,610
+but the way how the code is written, is definitely not secure. 
+
+60
+00:03:04,000 --> 00:03:08,091
+Let's look at the same application,  
+
+61
+00:03:08,000 --> 00:03:10,431 
+but this time let's see what happen 
+
+62
+00:03:10,431 --> 00:03:13,373
+when we add little extra something to the user data.
+
+63
+00:03:13,373 --> 00:03:15,980
+Like last time, I'll enter my name 
+
+64
+00:03:15,980 --> 00:03:18,400
+but this time I'll put a little SQL at the end. 
+
+65
+00:03:18,400 --> 00:03:23,000
+I'll hit submit and send request across the Internet 
+
+66
+00:03:23,000 --> 00:03:23,540
+to the target web application. 
+
+67
+00:03:23,540 --> 00:03:38,220
+Like before, the user-supplied data is joined together with the SQL 
+
+68
+00:03:38,220 --> 00:03:32,799
+but this time a bit of SQL I added to the end of my name, 
+
+69
+00:03:32,799 --> 00:03:36,400
+actually alters the intended purpose of SQL statement. 
+
+70
+00:03:36,400 --> 00:03:39,800
+The post line up perfectly to make a valid SQL statement. 
+
+71
+00:03:39,000 --> 00:03:43,802
+But now this time instead of just selecting the record for one name, 
+
+72
+00:03:43,802 --> 00:03:46,476
+it pulls down all the records. 
+
+73
+00:03:46,476 --> 00:03:48,248
+Which is exactly, 
+
+74
+00:03:48,248 --> 00:03:51,000
+how attackers pull out the attack like this. 
+
+75
+00:03:51,000 --> 00:03:52,900
+For example, in a recent case, 
+
+76
+00:03:52,900 --> 00:03:57,479
+attacker stole close to almost 200 thousand unencrypted user passwords 
+
+77
+00:03:57,479 --> 00:04:03,396
+and 500 thousand user's email from a very popular tech website. 
+
+78
+00:04:03,396 --> 00:04:11,000
 And another attack, due SQL injection, 30 million customer records were stolen from a popular online dating website. 
 
 39
